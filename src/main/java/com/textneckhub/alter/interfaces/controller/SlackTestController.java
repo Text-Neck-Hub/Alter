@@ -1,30 +1,34 @@
 package com.textneckhub.alter.interfaces.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-
 import com.textneckhub.alter.application.service.SlackNotifier;
-
+import com.textneckhub.alter.domain.model.LogMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
-@Controller
+import java.time.LocalDateTime;
+
+@RestController
 @RequiredArgsConstructor
 @Slf4j
 public class SlackTestController {
 
-    @Autowired
-    SlackNotifier slackService;
+    private final SlackNotifier slackNotifier;
 
     @GetMapping("/slack/test")
-    public void error(){
+    public Mono<Void> testErrorSlack() {
+        log.info("슬랙 ERROR 채널 테스트 시작");
 
-        log.info("슬랙 error 채널 테스트");
-        System.out.println("슬랙 error 채널 테스트");
-        try{slackService.sendMessage("슬랙 테스트");}
-        catch(Exception e){e.printStackTrace();}
+        LogMessage testLogMessage = new LogMessage(
+                "test-service",
+                "ERROR",
+                "이것은 WebFlux를 이용한 리액티브 슬랙 알림 테스트입니다.",
+                LocalDateTime.now()
+        );
+
+        return slackNotifier.sendSlackAlert(testLogMessage)
+                .doOnSuccess(v -> log.info("슬랙 테스트 메시지 전송 요청 완료."));
     }
-
-    
 }
