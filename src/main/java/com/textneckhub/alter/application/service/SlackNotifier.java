@@ -21,8 +21,7 @@ public class SlackNotifier {
     public SlackNotifier(
             Slack slack,
             @Value("${slack.token}") String slackToken,
-            @Value("${slack.channel}") String slackChannel
-    ) {
+            @Value("${slack.channel}") String slackChannel) {
         this.slack = slack;
         this.slackToken = slackToken;
         this.slackChannel = slackChannel;
@@ -35,19 +34,19 @@ public class SlackNotifier {
 
     private Mono<Void> sendMessage(String message) {
         return Mono.fromCallable(() -> {
-                    ChatPostMessageRequest request = ChatPostMessageRequest.builder()
-                            .channel(slackChannel)
-                            .text(message)
-                            .build();
+            ChatPostMessageRequest request = ChatPostMessageRequest.builder()
+                    .channel(slackChannel)
+                    .text(message)
+                    .build();
 
-                    ChatPostMessageResponse response = slack.methods(slackToken).chatPostMessage(request);
+            ChatPostMessageResponse response = slack.methods(slackToken).chatPostMessage(request);
 
-                    if (!response.isOk()) {
-                        throw new RuntimeException("Slack API Error: " + response.getError());
-                    }
-                    log.info("Slack message sent successfully.");
-                    return response;
-                })
+            if (!response.isOk()) {
+                throw new RuntimeException("Slack API Error: " + response.getError());
+            }
+            log.info("Slack message sent successfully.");
+            return response;
+        })
                 .subscribeOn(Schedulers.boundedElastic()) // I/O-intensive task on a dedicated thread pool
                 .doOnError(e -> log.error("Failed to send Slack message", e))
                 .then();
@@ -56,11 +55,10 @@ public class SlackNotifier {
     private String formatAlertMessage(LogMessage logMessage) {
         return String.format(
                 ":rotating_light: [%s] %s 알림 :rotating_light:\n> 서비스: *%s*\n> 메시지: `%s`\n> 발생시각: %s",
-                logMessage.level().toUpperCase(),
-                logMessage.level(),
-                logMessage.service(),
-                logMessage.message(),
-                logMessage.timestamp()
-        );
+                logMessage.getLevel().toUpperCase(),
+                logMessage.getLevel(),
+                logMessage.getService(),
+                logMessage.getMessage(),
+                logMessage.getTimestamp());
     }
 }

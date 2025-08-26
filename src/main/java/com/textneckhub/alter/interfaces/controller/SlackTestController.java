@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -24,9 +22,7 @@ public class SlackTestController {
         LogMessage testLogMessage = new LogMessage(
                 "test-service",
                 "ERROR",
-                "이것은 WebFlux를 이용한 리액티브 슬랙 알림 테스트입니다.",
-                LocalDateTime.now()
-        );
+                "이것은 WebFlux를 이용한 리액티브 슬랙 알림 테스트입니다.");
 
         return slackNotifier.sendSlackAlert(testLogMessage)
                 .doOnSuccess(v -> log.info("슬랙 테스트 메시지 전송 요청 완료."));

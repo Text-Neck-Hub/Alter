@@ -30,7 +30,7 @@ public class KafkaLogConsumer {
         // Slack 알림 처리 파이프라인
         Mono.just(record.value())
                 .flatMap(this::deserializeLogMessage)
-                .filter(logMessage -> "ERROR".equalsIgnoreCase(logMessage.level()))
+                .filter(logMessage -> "ERROR".equalsIgnoreCase(logMessage.getLevel()))
                 .flatMap(slackNotifier::sendSlackAlert)
                 .doOnError(e -> log.error("Kafka 메시지 처리 중 오류 발생: {}", e.getMessage()))
                 .subscribe();
@@ -42,7 +42,7 @@ public class KafkaLogConsumer {
             return Mono.just(message);
         } catch (JsonProcessingException e) {
             log.error("로그 메시지 역직렬화 실패: {}", json, e);
-            return Mono.error(e); // 에러를 다운스트림으로 전파
+            return Mono.error(e);
         }
     }
 }
