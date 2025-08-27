@@ -26,7 +26,7 @@ public class KafkaLogConsumer {
         messagingTemplate.convertAndSend("/topic/logs", record.value());
         Mono.just(record.value())
                 .flatMap(this::deserializeLogMessage)
-                .filter(logMessage -> "ERROR".equalsIgnoreCase(logMessage.getLevel()))
+                .filter(logMessage -> "INFO".equalsIgnoreCase(logMessage.getLevel()))
                 .flatMap(slackNotifier::sendSlackAlert)
                 .doOnError(e -> log.error("Kafka 처리 오류: {}", e.getMessage()))
                 .subscribe();
