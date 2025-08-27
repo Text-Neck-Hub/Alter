@@ -1,4 +1,6 @@
 <configuration>
+    <property name="LOG_DIR" value="${LOG_DIR:-/app/logs}" />
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -6,7 +8,8 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/prod.log</file>
+        <file>${LOG_DIR}/prod.log</file>
+        <append>true</append>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
