@@ -49,7 +49,7 @@ public class SlackNotifier implements NotifierPort {
             log.info("Slack message sent successfully.");
             return response;
         })
-                .subscribeOn(Schedulers.boundedElastic()) // I/O-intensive task on a dedicated thread pool
+                .subscribeOn(Schedulers.boundedElastic())
                 .doOnError(e -> log.error("Failed to send Slack message", e))
                 .then();
     }

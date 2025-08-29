@@ -22,7 +22,7 @@ public class KafkaLogConsumer {
     @KafkaListener(topics = "${app.kafka.log-topic:log-message}", groupId = "${spring.kafka.consumer.group-id}")
     public void listen(ConsumerRecord<String, String> record) {
         log.info("Received record: key={} value={}", record.key(), record.value());
-        // messagingTemplate.convertAndSend("/topic/logs", record.value());
+
         Mono.just(record.value())
                 .flatMap(this::deserializeLogMessage)
                 .filter(logMessage -> "INFO".equalsIgnoreCase(logMessage.getLevel()))
