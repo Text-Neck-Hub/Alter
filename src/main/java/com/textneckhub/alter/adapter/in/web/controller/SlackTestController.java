@@ -1,7 +1,7 @@
-package com.textneckhub.alter.interfaces.controller;
+package com.textneckhub.alter.adapter.in.web.controller;
 
-import com.textneckhub.alter.application.service.SlackNotifier;
 import com.textneckhub.alter.domain.model.LogMessage;
+import com.textneckhub.alter.domain.port.out.NotifierPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class SlackTestController {
 
-    private final SlackNotifier slackNotifier;
+    private final NotifierPort notifierPort;
 
     @GetMapping("/slack/test")
     public Mono<Void> testErrorSlack() {
@@ -24,7 +24,7 @@ public class SlackTestController {
                 "ERROR",
                 "이것은 WebFlux를 이용한 리액티브 슬랙 알림 테스트입니다.");
 
-        return slackNotifier.sendSlackAlert(testLogMessage)
+        return notifierPort.sendSlackAlert(testLogMessage)
                 .doOnSuccess(v -> log.info("슬랙 테스트 메시지 전송 요청 완료."));
     }
 }

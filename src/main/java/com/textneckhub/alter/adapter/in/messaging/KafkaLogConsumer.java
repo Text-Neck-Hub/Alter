@@ -1,8 +1,9 @@
-package com.textneckhub.alter.application.service;
+package com.textneckhub.alter.adapter.in.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.textneckhub.alter.domain.model.LogMessage;
+import com.textneckhub.alter.domain.port.out.NotifierPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Mono;
 public class KafkaLogConsumer {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final SlackNotifier slackNotifier;
+    private final NotifierPort notifierPort;
     private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "${app.kafka.log-topic:log-message}", groupId = "${spring.kafka.consumer.group-id}")
@@ -27,7 +28,7 @@ public class KafkaLogConsumer {
         Mono.just(record.value())
                 .flatMap(this::deserializeLogMessage)
                 .filter(logMessage -> "INFO".equalsIgnoreCase(logMessage.getLevel()))
-                .flatMap(slackNotifier::sendSlackAlert)
+                .flatMap(notifierPort::sendSlackAlert)
                 .doOnError(e -> log.error("Kafka 처리 오류: {}", e.getMessage()))
                 .subscribe();
     }

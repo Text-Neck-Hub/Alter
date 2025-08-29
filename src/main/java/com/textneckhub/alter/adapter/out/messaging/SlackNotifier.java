@@ -1,9 +1,10 @@
-package com.textneckhub.alter.application.service;
+package com.textneckhub.alter.adapter.out.messaging;
 
 import com.slack.api.Slack;
 import com.slack.api.methods.request.chat.ChatPostMessageRequest;
 import com.slack.api.methods.response.chat.ChatPostMessageResponse;
 import com.textneckhub.alter.domain.model.LogMessage;
+import com.textneckhub.alter.domain.port.out.NotifierPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import reactor.core.scheduler.Schedulers;
 
 @Service
 @Slf4j
-public class SlackNotifier {
+public class SlackNotifier implements NotifierPort {
 
     private final Slack slack;
     private final String slackToken;
@@ -27,6 +28,7 @@ public class SlackNotifier {
         this.slackChannel = slackChannel;
     }
 
+    @Override
     public Mono<Void> sendSlackAlert(LogMessage logMessage) {
         String message = formatAlertMessage(logMessage);
         return sendMessage(message);
