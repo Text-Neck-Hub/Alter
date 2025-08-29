@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class SlackTestController {
+public class SlackTest {
 
     private final NotifierPort notifierPort;
 
