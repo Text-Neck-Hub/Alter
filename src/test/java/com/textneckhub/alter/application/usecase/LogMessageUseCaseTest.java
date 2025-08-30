@@ -86,7 +86,6 @@ class LogMessageUseCaseTest {
             StepVerifier.create(result)
                     .verifyComplete(); // 아이템 방출 여부와 무관하게 완료만 확인
 
-            // then
             verify(notifierPort, never()).sendSlackAlert(any(LogMessage.class));
         }
     }
