@@ -16,7 +16,7 @@ public class SlackTest {
     private final NotifierPort notifierPort;
 
     @GetMapping("/slack/test")
-    public Mono<Void> testErrorSlack() {
+    public Mono<LogMessage> testErrorSlack() {
         log.info("슬랙 ERROR 채널 테스트 시작");
 
         LogMessage testLogMessage = new LogMessage(

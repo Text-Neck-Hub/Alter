@@ -1,10 +1,11 @@
+// adapter/in/messaging/KafkaLogConsumer.java
 package com.textneckhub.alter.adapter.in.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.textneckhub.alter.adapter.out.messaging.SlackNotifier;
 import com.textneckhub.alter.domain.model.LogMessage;
-import com.textneckhub.alter.domain.port.in.HandleLogMessageUseCase;
+import com.textneckhub.alter.domain.port.in.HandleLogMessage;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -16,18 +17,32 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaLogConsumer {
-    private final SlackNotifier notifierPort;
-    private final HandleLogMessageUseCase handleLogMessage;
+
+    private final HandleLogMessage useCase;
+    private final ObjectMapper objectMapper;
 
     @KafkaListener(topics = "${app.kafka.log-topic:log-message}", groupId = "${spring.kafka.consumer.group-id}")
     public void listen(ConsumerRecord<String, String> record) {
         log.info("Received record: key={} value={}", record.key(), record.value());
 
         Mono.just(record.value())
-                .flatMap(handleLogMessage::handle)
-                .flatMap(notifierPort::sendSlackAlert)
+                .flatMap(this::deserialize)
+                .flatMap(useCase::handle)
+
                 .doOnError(e -> log.error("Kafka 처리 오류: {}", e.getMessage(), e))
-                .subscribe();
+                .subscribe(
+                        v -> {
+                        },
+                        e -> {
+                        });
     }
 
+    private Mono<LogMessage> deserialize(String json) {
+        try {
+            return Mono.just(objectMapper.readValue(json, LogMessage.class));
+        } catch (JsonProcessingException e) {
+            log.error("역직렬화 실패: {}", json, e);
+            return Mono.error(e);
+        }
+    }
 }

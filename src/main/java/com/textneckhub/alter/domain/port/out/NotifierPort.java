@@ -4,5 +4,5 @@ import com.textneckhub.alter.domain.model.LogMessage;
 import reactor.core.publisher.Mono;
 
 public interface NotifierPort {
-    Mono<Void> sendSlackAlert(LogMessage msg);
+    Mono<LogMessage> sendSlackAlert(LogMessage msg);
 }

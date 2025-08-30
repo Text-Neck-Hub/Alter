@@ -26,8 +26,9 @@ public class SlackNotifier implements NotifierPort {
     private String slackChannel;
 
     @Override
-    public Mono<Void> sendSlackAlert(LogMessage msg) {
-        String text = String.format(":rotating_light: [%s] %s\n> 서비스: *%s*\n> 메시지: `%s`\n> 시각: %s",
+    public Mono<LogMessage> sendSlackAlert(LogMessage msg) {
+        String text = String.format(
+                ":rotating_light: [%s] %s\n> 서비스: *%s*\n> 메시지: `%s`\n> 시각: %s",
                 msg.getLevel(), "알림", msg.getService(), msg.getMessage(), msg.getTimestamp());
 
         return Mono.fromCallable(() -> {
@@ -41,6 +42,6 @@ public class SlackNotifier implements NotifierPort {
                 .subscribeOn(Schedulers.boundedElastic())
                 .doOnSuccess(r -> log.info("Slack 전송 성공 ts={}", r.getTs()))
                 .doOnError(e -> log.error("Slack 전송 실패", e))
-                .then();
+                .thenReturn(msg); // 전송 끝나고 msg 반환
     }
 }
