@@ -3,6 +3,8 @@ package com.textneckhub.alter.adapter.out.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.textneckhub.alter.domain.model.LogMessage;
+import com.textneckhub.alter.domain.port.out.LogMessageStorePort;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,13 +17,13 @@ import java.time.ZoneId;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class LogMessageRecorder {
+public class LogMessageRecorder implements LogMessageStorePort {
 
     private final LogMessageEntryRepository repository;
     private final ObjectMapper objectMapper;
 
-    public Mono<LogMessageEntry> save(LogMessage msg, String key) {
-
+    @Override
+    public Mono<LogMessage> save(LogMessage msg, String key) {
         Instant ts = msg.getTimestamp() == null
                 ? Instant.now()
                 : msg.getTimestamp().atZone(ZoneId.systemDefault()).toInstant();
@@ -36,10 +38,14 @@ public class LogMessageRecorder {
                         .message(msg.getMessage())
                         .payload(json)
                         .build())
-                .flatMap(repository::save);
+                .flatMap(repository::save)
+                .map(LogMessageEntry::toDomain)
+                .doOnError(e -> log.error("Mongo 저장 실패 key={} service={} level={}",
+                        key, msg.getService(), msg.getLevel(), e));
     }
 
-    public Mono<LogMessageEntry> saveRaw(String json, String key) {
+    @Override
+    public Mono<LogMessage> saveRaw(String json, String key) {
         return Mono.fromCallable(() -> parseSafe(json))
                 .subscribeOn(Schedulers.boundedElastic())
                 .map(parsed -> LogMessageEntry.builder()
@@ -50,7 +56,9 @@ public class LogMessageRecorder {
                         .message(parsed.message)
                         .payload(json)
                         .build())
-                .flatMap(repository::save);
+                .flatMap(repository::save)
+                .map(LogMessageEntry::toDomain)
+                .doOnError(e -> log.error("Mongo 저장 실패(raw) key={}", key, e));
     }
 
     private static String safeUpper(String s) {

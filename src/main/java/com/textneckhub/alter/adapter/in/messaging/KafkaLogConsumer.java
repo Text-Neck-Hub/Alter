@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.textneckhub.alter.domain.model.LogMessage;
 import com.textneckhub.alter.domain.port.in.HandleLogMessage;
+import com.textneckhub.alter.domain.port.out.LogMessageStorePort;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class KafkaLogConsumer {
-
+    private final LogMessageStorePort logMessageStore;
     private final HandleLogMessage useCase;
     private final ObjectMapper objectMapper;
 
@@ -28,7 +29,7 @@ public class KafkaLogConsumer {
         Mono.just(record.value())
                 .flatMap(this::deserialize)
                 .flatMap(useCase::handle)
-
+                .flatMap(msg -> logMessageStore.save(msg, record.key()))
                 .doOnError(e -> log.error("Kafka 처리 오류: {}", e.getMessage(), e))
                 .subscribe(
                         v -> {

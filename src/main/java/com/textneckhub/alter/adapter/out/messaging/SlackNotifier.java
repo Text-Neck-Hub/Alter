@@ -42,6 +42,6 @@ public class SlackNotifier implements NotifierPort {
                 .subscribeOn(Schedulers.boundedElastic())
                 .doOnSuccess(r -> log.info("Slack 전송 성공 ts={}", r.getTs()))
                 .doOnError(e -> log.error("Slack 전송 실패", e))
-                .thenReturn(msg); // 전송 끝나고 msg 반환
+                .thenReturn(msg);
     }
 }
