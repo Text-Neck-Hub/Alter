@@ -27,8 +27,8 @@ jobs:
           distribution: "temurin"
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-      - name: Build and test with Gradle
-        run: ./gradlew clean build
+      - name: Build and test
+        run: ./gradlew clean build -Dorg.springframework.boot.logging.LoggingSystem=none
         env:
           CI: true
       - name: Upload test reports
